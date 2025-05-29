@@ -2,30 +2,82 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Insumos PWA</title>
+  <link rel="manifest" href="manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 1rem; }
-    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th input { width: 90%; margin-top: 5px; padding: 4px; }
-    canvas { max-width: 500px; margin: 2rem auto; display: block; }
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    .controls {
+      margin-bottom: 1rem;
+    }
+    input[type="text"],
+    input[type="number"] {
+      padding: 0.5rem;
+      margin: 0.25rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.25rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background: #f0f0f0;
+    }
+    canvas {
+      max-width: 500px;
+      margin-top: 2rem;
+    }
   </style>
 </head>
 <body>
-  <h1>Tabla de Insumos</h1>
-  <div id="table-container">Cargando datos...</div>
+  <h1>Lista de Insumos</h1>
 
-  <h2>Top materiales según cantidad</h2>
-  <canvas id="chartCantidad"></canvas>
+  <div class="controls">
+    <label>Filtrar por nombre:
+      <input type="text" id="inputFilter" placeholder="Buscar por descripción..." />
+    </label>
+    <button id="resetFilter">Resetear Filtros</button>
+    <br><br>
+    <label>Top N por Cantidad:
+      <input type="number" id="topCantidad" value="5" min="1" />
+    </label>
+    <label>Top N por Costo:
+      <input type="number" id="topCosto" value="5" min="1" />
+    </label>
+  </div>
 
-  <h2>Top materiales según costo</h2>
-  <canvas id="chartCosto"></canvas>
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Nº</th>
+        <th>Descripción insumos</th>
+        <th>Und.</th>
+        <th>Cant.</th>
+        <th>Unit.</th>
+        <th>Parcial (Bs)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Se cargan dinámicamente -->
+    </tbody>
+  </table>
 
-  <!-- SheetJS -->
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <canvas id="chart"></canvas>
+
   <script src="app.js"></script>
 </body>
 </html>
