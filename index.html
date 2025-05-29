@@ -3,159 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Insumos PWA</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 900px; margin: auto; }
-    table { border-collapse: collapse; width: 100%; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
-    label, input, select { margin: 5px; }
-    .filtros { margin-bottom: 15px; }
-    button { margin: 5px; }
-  </style>
+  <title>Cargar Excel desde GitHub en PWA</title>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-
-  <h1>Lista de Insumos</h1>
-
-  <div class="filtros">
-    <label>Filtrar por nombre: <input type="text" id="filtro-nombre" placeholder="Descripción" /></label>
-    <label>Filtrar por unidad: 
-      <select id="filtro-unidad">
-        <option value="">Todas</option>
-      </select>
-    </label>
-    <label>Cantidad mínima: <input type="number" id="filtro-cantidad" min="0" step="0.01" /></label>
-    <button id="btn-filtrar">Aplicar filtros</button>
-    <button id="btn-reset">Mostrar todo</button>
-  </div>
-
-  <div>
-    <label>Top N: <input type="number" id="top-n" min="1" value="3" /></label>
-    <button id="top-cantidad">Top por Cantidad</button>
-    <button id="top-parcial">Top por Costo Parcial</button>
-  </div>
-
-  <table id="tabla-insumos">
-    <thead>
-      <tr>
-        <th>Descripción</th>
-        <th>Unidad</th>
-        <th>Cantidad</th>
-        <th>Precio Unitario</th>
-        <th>Parcial (Bs)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Filas aquí -->
-    </tbody>
-  </table>
+  <h1>Lectura de Excel desde GitHub</h1>
+  <pre id="output" style="white-space: pre-wrap; background: #eee; padding: 10px;"></pre>
 
   <script>
-    let insumosData = [];
+    async function cargarExcelDesdeGitHub() {
+      const urlExcel = 'https://raw.githubusercontent.com/usuario/repositorio/main/insumos.xlsx';
+      try {
+        const response = await fetch(urlExcel);
+        if (!response.ok) throw new Error('No se pudo cargar el archivo Excel');
 
-    // Carga y parsea el CSV
-    function cargarCSV() {
-      Papa.parse('insumos.csv', {
-        download: true,
-        header: true,
-        encoding: "UTF-8",
-        skipEmptyLines: true,
-        complete: function(results) {
-          insumosData = results.data.map(row => {
-            // Normalizamos datos para asegurar tipos correctos
-            return {
-              Descripción: row["Descripción"]?.trim() || "",
-              Unidad: row["Unidad"]?.trim() || "",
-              Cantidad: parseFloat(row["Cantidad"]) || 0,
-              "Precio Unitario": parseFloat(row["Precio Unitario"]) || 0,
-              "Parcial (Bs)": parseFloat(row["Parcial (Bs)"]) || 0
-            };
-          });
-          poblarFiltroUnidad();
-          renderTable(insumosData);
-        }
-      });
+        const arrayBuffer = await response.arrayBuffer();
+        const data = new Uint8Array(arrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+        return jsonData;
+      } catch (error) {
+        console.error('Error al cargar o procesar Excel:', error);
+        return null;
+      }
     }
 
-    // Pone opciones únicas de unidad en el filtro
-    function poblarFiltroUnidad() {
-      const selectUnidad = document.getElementById("filtro-unidad");
-      const unidades = Array.from(new Set(insumosData.map(d => d.Unidad))).sort();
-      unidades.forEach(u => {
-        const option = document.createElement("option");
-        option.value = u;
-        option.textContent = u;
-        selectUnidad.appendChild(option);
-      });
-    }
-
-    // Renderiza la tabla con datos dados
-    function renderTable(data) {
-      const tbody = document.querySelector("#tabla-insumos tbody");
-      tbody.innerHTML = "";
-      data.forEach(row => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${row.Descripción}</td>
-          <td>${row.Unidad}</td>
-          <td>${row.Cantidad.toFixed(2)}</td>
-          <td>${row["Precio Unitario"].toFixed(2)}</td>
-          <td>${row["Parcial (Bs)"].toFixed(2)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Aplica filtros
-    function aplicarFiltros() {
-      const nombre = document.getElementById("filtro-nombre").value.toLowerCase();
-      const unidad = document.getElementById("filtro-unidad").value;
-      const cantidadMin = parseFloat(document.getElementById("filtro-cantidad").value) || 0;
-
-      let filtrado = insumosData.filter(row => {
-        const nombreOk = row.Descripción.toLowerCase().includes(nombre);
-        const unidadOk = unidad === "" || row.Unidad === unidad;
-        const cantidadOk = row.Cantidad >= cantidadMin;
-        return nombreOk && unidadOk && cantidadOk;
-      });
-      renderTable(filtrado);
-    }
-
-    // Muestra todo
-    function mostrarTodo() {
-      document.getElementById("filtro-nombre").value = "";
-      document.getElementById("filtro-unidad").value = "";
-      document.getElementById("filtro-cantidad").value = "";
-      renderTable(insumosData);
-    }
-
-    // Mostrar Top N por campo
-    function showTopN(field, n) {
-      const sorted = [...insumosData]
-        .sort((a, b) => parseFloat(b[field]) - parseFloat(a[field]))
-        .slice(0, n);
-      renderTable(sorted);
-    }
-
-    // Eventos
-    document.getElementById("btn-filtrar").addEventListener("click", aplicarFiltros);
-    document.getElementById("btn-reset").addEventListener("click", mostrarTodo);
-
-    document.getElementById("top-cantidad").addEventListener("click", () => {
-      const n = parseInt(document.getElementById("top-n").value) || 3;
-      showTopN("Cantidad", n);
-    });
-
-    document.getElementById("top-parcial").addEventListener("click", () => {
-      const n = parseInt(document.getElementById("top-n").value) || 3;
-      showTopN("Parcial (Bs)", n);
-    });
-
-    // Al cargar página
-    cargarCSV();
+    window.onload = async () => {
+      const datos = await cargarExcelDesdeGitHub();
+      if (datos) {
+        console.log(datos);
+        // Mostrar datos en pantalla para prueba
+        document.getElementById('output').textContent = JSON.stringify(datos, null, 2);
+      } else {
+        document.getElementById('output').textContent = 'Error al cargar los datos.';
+      }
+    };
   </script>
-
 </body>
 </html>
