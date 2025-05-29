@@ -1,6 +1,6 @@
 import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
 
-const url = "https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/4baa7c0dccc19e622a3d1bf9745cc334b1f0ca54/insumos.xlsx";
+const url = "insumos.xlsx"; // o "assets/insumos.xlsx" si está en una subcarpeta
 
 let data = [];
 let filteredData = [];
