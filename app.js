@@ -1,6 +1,6 @@
 import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
 
-const url = "insumos.xlsx"; // o "assets/insumos.xlsx" si está en una subcarpeta
+const url = "insumos.xlsx";
 
 let data = [];
 let filteredData = [];
@@ -15,13 +15,12 @@ const topCantidadBtn = document.getElementById("topCantidad");
 const topCostoBtn = document.getElementById("topCosto");
 const resetBtn = document.getElementById("reset");
 
-const chartCanvas = document.getElementById('chartCosto');
-const chartCantidadCanvas = document.getElementById('chartCantidad');
+const chartCanvas = document.getElementById("chartCosto");
+const chartCantidadCanvas = document.getElementById("chartCantidad");
 
 let chartInstance;
 let chartCantidadInstance;
 
-// Carga el Excel y prepara todo
 async function loadExcel() {
   try {
     const res = await fetch(url);
@@ -33,14 +32,13 @@ async function loadExcel() {
     data = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
     filteredData = [...data];
     buildTableHeader();
-    renderTable(data);        // Mostrar toda la tabla al inicio
-    updateCharts(data);       // Graficar toda la data
+    renderTable(data);
+    updateCharts(data);
   } catch (error) {
     alert("Error cargando datos: " + error.message);
   }
 }
 
-// Construye encabezados y filtros de columna
 function buildTableHeader() {
   headerRow.innerHTML = "";
   filterRow.innerHTML = "";
@@ -48,12 +46,10 @@ function buildTableHeader() {
 
   const keys = Object.keys(data[0]);
   keys.forEach((key) => {
-    // Encabezado
     const th = document.createElement("th");
     th.textContent = key;
     headerRow.appendChild(th);
 
-    // Input filtro
     const filterTh = document.createElement("th");
     const input = document.createElement("input");
     input.type = "text";
@@ -70,7 +66,6 @@ function buildTableHeader() {
   });
 }
 
-// Renderiza tabla con los datos que recibe
 function renderTable(dataSet) {
   tbody.innerHTML = "";
   if (dataSet.length === 0) {
@@ -94,7 +89,6 @@ function renderTable(dataSet) {
   });
 }
 
-// Aplica filtros desde inputs, filtra sobre todos los datos originales (data)
 function applyFilters() {
   const inputs = document.querySelectorAll("#filter-row input");
   filteredData = data.filter((row) =>
@@ -108,7 +102,6 @@ function applyFilters() {
   updateCharts(filteredData);
 }
 
-// Resetea filtros y muestra toda la data
 function resetFilters() {
   document.querySelectorAll("#filter-row input").forEach((input) => (input.value = ""));
   filteredData = [...data];
@@ -116,22 +109,22 @@ function resetFilters() {
   updateCharts(data);
 }
 
-// Devuelve el Top N por una clave numérica descendente
 function getTopN(dataSet, key, n) {
   return [...dataSet]
-    .filter(item => !isNaN(parseFloat(item[key])))
+    .filter((item) => !isNaN(parseFloat(item[key])))
     .sort((a, b) => parseFloat(b[key]) - parseFloat(a[key]))
     .slice(0, n);
 }
 
-// Actualiza gráficos según data dada
 function updateCharts(dataSet) {
   const topN = parseInt(topNInput.value) || 5;
 
-  // Top por costo (pastel)
+  // Gráfico de Costo
   const topCosto = getTopN(dataSet, "Parcial (Bs)", topN);
   const labelsCosto = topCosto.map((item) => item["Descripción insumos"]);
   const valoresCosto = topCosto.map((item) => parseFloat(item["Parcial (Bs)"]));
+  const totalCosto = valoresCosto.reduce((sum, val) => sum + val, 0);
+  const totalFormateado = totalCosto.toLocaleString("es-BO", { style: "currency", currency: "BOB" });
 
   if (chartInstance) chartInstance.destroy();
   chartInstance = new Chart(chartCanvas, {
@@ -157,13 +150,26 @@ function updateCharts(dataSet) {
       plugins: {
         title: {
           display: true,
-          text: `Top ${topN} por Costo (Bs)`,
+          text: `Top ${topN} por Costo (Bs): ${totalFormateado}`,
+          color: "#000",
+          font: {
+            size: 20,
+            weight: "bold",
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              const value = context.raw || 0;
+              return `${context.label}: ${value.toLocaleString("es-BO", { style: "currency", currency: "BOB" })}`;
+            },
+          },
         },
       },
     },
   });
 
-  // Top por cantidad (barra)
+  // Gráfico de Cantidad
   const topCant = getTopN(dataSet, "Cant.", topN);
   const labelsCant = topCant.map((item) => item["Descripción insumos"]);
   const valoresCant = topCant.map((item) => parseFloat(item["Cant."]));
@@ -197,7 +203,6 @@ function updateCharts(dataSet) {
   });
 }
 
-// Eventos botones
 topCantidadBtn.addEventListener("click", () => {
   const topN = parseInt(topNInput.value) || 5;
   const topItems = getTopN(filteredData, "Cant.", topN);
@@ -216,5 +221,4 @@ resetBtn.addEventListener("click", () => {
   resetFilters();
 });
 
-// Carga inicial
 loadExcel();
