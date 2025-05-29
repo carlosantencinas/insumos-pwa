@@ -1,30 +1,36 @@
-const inputExcel = document.getElementById('input-excel');
+const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/4baa7c0dccc19e622a3d1bf9745cc334b1f0ca54/insumos.xlsx';
+
 const tableContainer = document.getElementById('table-container');
 
-let data = []; // Array de objetos con datos
+let data = [];
 let filteredData = [];
 
-inputExcel.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
+async function loadExcelFromURL(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Error al descargar archivo Excel');
 
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    const dataArray = new Uint8Array(evt.target.result);
-    const workbook = XLSX.read(dataArray, {type:'array'});
-    // Suponemos la primera hoja
+    const arrayBuffer = await response.arrayBuffer();
+    const dataArray = new Uint8Array(arrayBuffer);
+    const workbook = XLSX.read(dataArray, { type: 'array' });
+
     const firstSheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[firstSheetName];
-    const json = XLSX.utils.sheet_to_json(worksheet, {defval: ''});
+    const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
     data = json;
     filteredData = [...data];
     renderTable(filteredData);
     renderCharts(filteredData);
-  };
-  reader.readAsArrayBuffer(file);
-});
 
-// Renderizar tabla con filtros en encabezado
+  } catch (error) {
+    tableContainer.innerHTML = `<p>Error cargando archivo: ${error.message}</p>`;
+    console.error(error);
+  }
+}
+
+// Renderizado y funciones para filtros y gráficos, igual que antes
+
 function renderTable(dataArray) {
   if(dataArray.length === 0){
     tableContainer.innerHTML = '<p>No hay datos para mostrar.</p>';
@@ -33,7 +39,6 @@ function renderTable(dataArray) {
 
   const columns = Object.keys(dataArray[0]);
 
-  // Crear tabla y encabezados con input de filtro
   let html = '<table><thead><tr>';
   columns.forEach(col => {
     html += `<th>${col}<br><input type="text" data-col="${col}" placeholder="Filtrar" /></th>`;
@@ -51,14 +56,13 @@ function renderTable(dataArray) {
 
   tableContainer.innerHTML = html;
 
-  // Agregar eventos a inputs para filtrar
+  // Añadir eventos para filtrar
   const inputs = tableContainer.querySelectorAll('thead input');
   inputs.forEach(input => {
     input.addEventListener('input', onFilterChange);
   });
 }
 
-// Función que filtra tabla según inputs
 function onFilterChange() {
   const inputs = tableContainer.querySelectorAll('thead input');
   filteredData = data.filter(row => {
@@ -73,11 +77,9 @@ function onFilterChange() {
   renderCharts(filteredData);
 }
 
-// Generar gráficos de torta para top 5 por cantidad y costo
 function renderCharts(dataArray) {
   if (!dataArray.length) return;
 
-  // Parsear valores numéricos
   const parsedData = dataArray.map(item => ({
     desc: item['Descripción insumos'],
     cant: parseFloat(item['Cant.']) || 0,
@@ -86,17 +88,14 @@ function renderCharts(dataArray) {
 
   const totalCosto = parsedData.reduce((acc, cur) => acc + cur.costo, 0);
 
-  // Top 5 por cantidad
   const topCantidad = [...parsedData]
     .sort((a,b) => b.cant - a.cant)
     .slice(0,5);
 
-  // Top 5 por costo
   const topCosto = [...parsedData]
     .sort((a,b) => b.costo - a.costo)
     .slice(0,5);
 
-  // Función para preparar datos para Chart.js
   function prepareChartData(items) {
     const labels = items.map(i => i.desc);
     const values = items.map(i => i.costo);
@@ -120,7 +119,6 @@ function renderPieChart(canvasId, labels, data) {
   if(chartInstances[canvasId]){
     chartInstances[canvasId].destroy();
   }
-
   const ctx = document.getElementById(canvasId).getContext('2d');
   chartInstances[canvasId] = new Chart(ctx, {
     type: 'pie',
@@ -134,13 +132,14 @@ function renderPieChart(canvasId, labels, data) {
         ]
       }]
     },
-    options: {
-      responsive: true
-    }
+    options: { responsive: true }
   });
 }
 
-// Registrar service worker para PWA
+// Cargar archivo al inicio
+loadExcelFromURL(GITHUB_RAW_URL);
+
+// Registro service worker igual que antes
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').then(() => {
