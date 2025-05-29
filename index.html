@@ -48,16 +48,6 @@
     <button id="reset" aria-label="Resetear filtros">Resetear Filtros</button>
   </div>
 
-  <div id="tabla-container">
-    <table id="tablaInsumos">
-      <thead>
-        <tr id="header-row"></tr>
-        <tr id="filter-row" class="filter-row"></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
   <div style="display: flex; gap: 20px; margin-top: 2rem;">
     <div style="flex: 1;">
       <h3>Top N por Cantidad</h3>
@@ -67,6 +57,16 @@
       <h3>Top N por Costo</h3>
       <canvas id="chartCosto" height="200"></canvas>
     </div>
+  </div>
+
+  <div id="tabla-container" style="margin-top: 2rem;">
+    <table id="tablaInsumos">
+      <thead>
+        <tr id="header-row"></tr>
+        <tr id="filter-row" class="filter-row"></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <script type="module" src="app.js"></script>
