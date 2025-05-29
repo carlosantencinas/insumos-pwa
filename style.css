@@ -1,0 +1,31 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 1rem;
+  background-color: #f4f4f4;
+}
+
+h1 {
+  color: #2d89ef;
+}
+
+input, button {
+  margin: 0.5rem;
+  padding: 0.4rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: white;
+}
+
+th, td {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.filtros, .topN {
+  margin-top: 1rem;
+}
