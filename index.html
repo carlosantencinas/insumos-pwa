@@ -1,34 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Insumos - Top N y Filtros</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="app.js" defer></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #charts {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    canvas {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 100%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    #filter-row input {
+      width: 90%;
+      box-sizing: border-box;
+      padding: 4px;
+    }
+    #controls {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #controls label {
+      font-weight: bold;
+    }
+    #controls input[type="number"] {
+      width: 60px;
+      padding: 4px;
+    }
+    button {
+      padding: 6px 12px;
+      cursor: pointer;
+      border: 1px solid #007bff;
+      background-color: #007bff;
+      color: white;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
 <body>
-  <h1>Lista de Insumos</h1>
 
-  <div style="margin-bottom: 1rem;">
-    <label for="topN">Mostrar Top N:</label>
-    <input type="number" id="topN" value="5" min="1" />
-    <button id="topCantidad">Top por Cantidad</button>
-    <button id="topCosto">Top por Costo</button>
-    <button id="reset">Resetear Filtros</button>
+  <h1>Insumos - Análisis Top N</h1>
+
+  <div id="controls">
+    <label for="topN">Número de Top N:</label>
+    <input type="number" id="topN" min="1" value="5" />
+    <button id="topCantidad">Mostrar Top N por Cantidad</button>
+    <button id="topCosto">Mostrar Top N por Costo</button>
+    <button id="reset">Resetear filtros y tabla</button>
   </div>
 
-  <div id="tabla-container">
-    <table id="tablaInsumos">
-      <thead>
-        <tr id="header-row"></tr>
-        <tr id="filter-row" class="filter-row"></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <div id="charts">
+    <canvas id="chartCosto" width="300" height="300"></canvas>
+    <canvas id="chartCantidad" width="300" height="300"></canvas>
+    <canvas id="chartPorcentaje" width="300" height="300"></canvas>
   </div>
 
-  <div style="display: flex; gap: 20px; margin-top: 2rem;">
-    <div style="flex: 1;">
-      <h3>Top N por Cantidad</h3>
-      <canvas id="chartCantidad" height="200"></canvas>
-    </div>
-    <div style="flex: 1;">
-      <h3>Top N por Costo</h3>
-      <canvas id="chartCosto" height="200"></canvas>
-    </div>
-  </div>
+  <table id="tablaInsumos">
+    <thead>
+      <tr id="header-row"></tr>
+      <tr id="filter-row"></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-  <script src="app.js"></script>
 </body>
+</html>
