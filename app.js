@@ -21,7 +21,7 @@ const chartCantidadCanvas = document.getElementById('chartCantidad');
 let chartInstance;
 let chartCantidadInstance;
 
-// Carga el Excel y prepara todo
+// Función para cargar y leer el archivo Excel
 async function loadExcel() {
   try {
     const res = await fetch(url);
@@ -33,14 +33,14 @@ async function loadExcel() {
     data = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
     filteredData = [...data];
     buildTableHeader();
-    renderTable(data);        // Mostrar toda la tabla al inicio
-    updateCharts(data);       // Graficar toda la data
+    renderTable(filteredData);
+    updateCharts(filteredData);
   } catch (error) {
     alert("Error cargando datos: " + error.message);
   }
 }
 
-// Construye encabezados y filtros de columna
+// Construye encabezados y fila de filtros dinámicamente
 function buildTableHeader() {
   headerRow.innerHTML = "";
   filterRow.innerHTML = "";
@@ -48,29 +48,27 @@ function buildTableHeader() {
 
   const keys = Object.keys(data[0]);
   keys.forEach((key) => {
-    // Encabezado
+    // Encabezado de columna
     const th = document.createElement("th");
     th.textContent = key;
     headerRow.appendChild(th);
 
-    // Input filtro
+    // Filtro por columna
     const filterTh = document.createElement("th");
     const input = document.createElement("input");
     input.type = "text";
     input.dataset.key = key;
     input.placeholder = "Filtrar...";
     input.setAttribute("aria-label", `Filtro para la columna ${key}`);
-
     input.addEventListener("input", () => {
       applyFilters();
     });
-
     filterTh.appendChild(input);
     filterRow.appendChild(filterTh);
   });
 }
 
-// Renderiza tabla con los datos que recibe
+// Renderiza la tabla con el dataset proporcionado
 function renderTable(dataSet) {
   tbody.innerHTML = "";
   if (dataSet.length === 0) {
@@ -94,7 +92,7 @@ function renderTable(dataSet) {
   });
 }
 
-// Aplica filtros desde inputs, filtra sobre todos los datos originales (data)
+// Aplica los filtros activos en cada columna
 function applyFilters() {
   const inputs = document.querySelectorAll("#filter-row input");
   filteredData = data.filter((row) =>
@@ -108,15 +106,15 @@ function applyFilters() {
   updateCharts(filteredData);
 }
 
-// Resetea filtros y muestra toda la data
+// Resetea todos los filtros y muestra toda la tabla
 function resetFilters() {
   document.querySelectorAll("#filter-row input").forEach((input) => (input.value = ""));
   filteredData = [...data];
-  renderTable(data);
-  updateCharts(data);
+  renderTable(filteredData);
+  updateCharts(filteredData);
 }
 
-// Devuelve el Top N por una clave numérica descendente
+// Obtiene el Top N elementos basado en una clave numérica descendente
 function getTopN(dataSet, key, n) {
   return [...dataSet]
     .filter(item => !isNaN(parseFloat(item[key])))
@@ -124,11 +122,11 @@ function getTopN(dataSet, key, n) {
     .slice(0, n);
 }
 
-// Actualiza gráficos según data dada
+// Actualiza ambas gráficas según el dataset dado
 function updateCharts(dataSet) {
   const topN = parseInt(topNInput.value) || 5;
 
-  // Top por costo (pastel)
+  // Top por costo (gráfico tipo torta)
   const topCosto = getTopN(dataSet, "Parcial (Bs)", topN);
   const labelsCosto = topCosto.map((item) => item["Descripción insumos"]);
   const valoresCosto = topCosto.map((item) => parseFloat(item["Parcial (Bs)"]));
@@ -163,7 +161,7 @@ function updateCharts(dataSet) {
     },
   });
 
-  // Top por cantidad (barra)
+  // Top por cantidad (gráfico de barras)
   const topCant = getTopN(dataSet, "Cant.", topN);
   const labelsCant = topCant.map((item) => item["Descripción insumos"]);
   const valoresCant = topCant.map((item) => parseFloat(item["Cant."]));
@@ -197,7 +195,7 @@ function updateCharts(dataSet) {
   });
 }
 
-// Eventos botones
+// Eventos botones para mostrar Top N por cantidad y costo, o resetear filtros
 topCantidadBtn.addEventListener("click", () => {
   const topN = parseInt(topNInput.value) || 5;
   const topItems = getTopN(filteredData, "Cant.", topN);
@@ -216,5 +214,5 @@ resetBtn.addEventListener("click", () => {
   resetFilters();
 });
 
-// Carga inicial
+// Inicializar la carga del Excel al cargar la página
 loadExcel();
