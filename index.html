@@ -3,45 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cargar Excel desde GitHub en PWA</title>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <title>PWA Insumos</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th input { width: 90%; }
+    .charts { display: flex; gap: 40px; margin-top: 30px; }
+    canvas { max-width: 400px; max-height: 400px; }
+  </style>
 </head>
 <body>
-  <h1>Lectura de Excel desde GitHub</h1>
-  <pre id="output" style="white-space: pre-wrap; background: #eee; padding: 10px;"></pre>
+  <h1>PWA: Tabla de Insumos</h1>
+  <input type="file" id="input-excel" accept=".xlsx,.xls" />
+  <div id="table-container"></div>
 
-  <script>
-async function cargarExcelDesdeGitHub() {
-  const urlExcel = "https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/main/insumos.xlsx";
-  try {
-    const response = await fetch(urlExcel);
-    if (!response.ok) throw new Error('No se pudo cargar el archivo Excel');
+  <div class="charts">
+    <div>
+      <h3>Top por Cantidad</h3>
+      <canvas id="chartCantidad"></canvas>
+    </div>
+    <div>
+      <h3>Top por Costo</h3>
+      <canvas id="chartCosto"></canvas>
+    </div>
+  </div>
 
-    const arrayBuffer = await response.arrayBuffer();
-    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-
-    const firstSheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[firstSheetName];
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-    return jsonData;
-  } catch (error) {
-    console.error('Error al cargar o procesar Excel:', error);
-    return null;
-  }
-}
-
-
-    window.onload = async () => {
-      const datos = await cargarExcelDesdeGitHub();
-      if (datos) {
-        console.log(datos);
-        // Mostrar datos en pantalla para prueba
-        document.getElementById('output').textContent = JSON.stringify(datos, null, 2);
-      } else {
-        document.getElementById('output').textContent = 'Error al cargar los datos.';
-      }
-    };
-  </script>
+  <script src="xlsx.full.min.js"></script>
+  <script src="chart.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
