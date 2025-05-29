@@ -1,6 +1,17 @@
 let insumos = [];
 
-document.getElementById('fileInput').addEventListener('change', cargarCSV);
+window.addEventListener('load', () => {
+  Papa.parse('insumos.csv', {
+    download: true,
+    header: true,
+    dynamicTyping: true,
+    complete: function(results) {
+      insumos = results.data.filter(row => row.Nombre); // ignora filas vacías
+      filtrar();
+    }
+  });
+});
+
 document.getElementById('filtroNombre').addEventListener('input', filtrar);
 document.getElementById('filtroUnidad').addEventListener('input', filtrar);
 document.getElementById('filtroCantidad').addEventListener('input', filtrar);
