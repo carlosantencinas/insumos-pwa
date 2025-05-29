@@ -15,7 +15,7 @@ fetch('https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/4baa7c0dcc
     const workbook = XLSX.read(buffer, { type: 'array' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     data = XLSX.utils.sheet_to_json(sheet);
-    filteredData = [...data];
+    filteredData = [...data]; // Mostrar todo al inicio
     renderTable(filteredData);
     updateChart();
   });
@@ -44,7 +44,6 @@ function renderTable(dataToRender) {
     tableBody.appendChild(tr);
   });
 }
-
 
 function updateChart() {
   const topN = parseInt(topCostoInput.value || 5);
@@ -96,7 +95,7 @@ resetButton.addEventListener('click', () => {
 });
 
 topCantidadInput.addEventListener('input', () => {
-  renderTable(filteredData); // En el futuro puedes agregar gráfico de cantidad si deseas
+  renderTable(filteredData);
 });
 
 topCostoInput.addEventListener('input', () => {
