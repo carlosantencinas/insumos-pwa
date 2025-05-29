@@ -3,35 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PWA Insumos</title>
-  <link rel="manifest" href="manifest.json" />
+  <title>Insumos PWA</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    body { font-family: Arial, sans-serif; margin: 1rem; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th input { width: 90%; }
-    .charts { display: flex; gap: 40px; margin-top: 30px; }
-    canvas { max-width: 400px; max-height: 400px; }
+    th input { width: 90%; margin-top: 5px; padding: 4px; }
+    canvas { max-width: 500px; margin: 2rem auto; display: block; }
   </style>
 </head>
 <body>
-  <h1>PWA: Tabla de Insumos</h1>
-  <input type="file" id="input-excel" accept=".xlsx,.xls" />
-  <div id="table-container"></div>
+  <h1>Tabla de Insumos</h1>
+  <div id="table-container">Cargando datos...</div>
 
-  <div class="charts">
-    <div>
-      <h3>Top por Cantidad</h3>
-      <canvas id="chartCantidad"></canvas>
-    </div>
-    <div>
-      <h3>Top por Costo</h3>
-      <canvas id="chartCosto"></canvas>
-    </div>
-  </div>
+  <h2>Top materiales según cantidad</h2>
+  <canvas id="chartCantidad"></canvas>
 
-  <script src="xlsx.full.min.js"></script>
-  <script src="chart.min.js"></script>
+  <h2>Top materiales según costo</h2>
+  <canvas id="chartCosto"></canvas>
+
+  <!-- SheetJS -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
