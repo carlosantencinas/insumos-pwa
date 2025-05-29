@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2d89ef">
+  <link rel="manifest" href="manifest.json">
+  <title>Insumos PWA</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+  <h1>Gestión de Insumos</h1>
+
+  <input type="file" id="fileInput" accept=".csv">
+
+  <div class="filtros">
+    <input type="text" id="filtroNombre" placeholder="Filtrar por nombre">
+    <input type="text" id="filtroUnidad" placeholder="Filtrar por unidad">
+    <input type="number" id="filtroCantidad" placeholder="Filtrar por cantidad mínima">
+  </div>
+
+  <div class="topN">
+    <label>Top N: <input type="number" id="topN" value="5"></label>
+    <button onclick="mostrarTopCantidad()">Top Cantidad</button>
+    <button onclick="mostrarTopCosto()">Top Costo Parcial</button>
+  </div>
+
+  <table id="tablaInsumos">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Unidad</th>
+        <th>Cantidad</th>
+        <th>Precio Unitario</th>
+        <th>Costo Parcial</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+</body>
+</html>
