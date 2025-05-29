@@ -22,6 +22,18 @@ fetch('https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/4baa7c0dcc
 
 function renderTable(dataToRender) {
   tableBody.innerHTML = '';
+
+  if (dataToRender.length === 0) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 6;
+    td.style.textAlign = 'center';
+    td.textContent = 'No hay datos para mostrar.';
+    tr.appendChild(td);
+    tableBody.appendChild(tr);
+    return;
+  }
+
   dataToRender.forEach(row => {
     const tr = document.createElement('tr');
     ['Nº', 'Descripción insumos', 'Und.', 'Cant.', 'Unit.', 'Parcial (Bs)'].forEach(key => {
@@ -32,6 +44,7 @@ function renderTable(dataToRender) {
     tableBody.appendChild(tr);
   });
 }
+
 
 function updateChart() {
   const topN = parseInt(topCostoInput.value || 5);
