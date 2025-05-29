@@ -145,6 +145,7 @@ resetButton.addEventListener('click', () => {
   updateChartCantidad();
 });
 
+
 topCantidadInput.addEventListener('input', () => {
   updateChartCantidad();
 });
