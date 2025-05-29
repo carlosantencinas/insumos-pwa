@@ -21,21 +21,26 @@ const chartCantidadCanvas = document.getElementById('chartCantidad');
 let chartInstance;
 let chartCantidadInstance;
 
-// Función para cargar y leer Excel
+// Carga el Excel y prepara todo
 async function loadExcel() {
-  const res = await fetch(url);
-  const arrayBuffer = await res.arrayBuffer();
-  const workbook = XLSX.read(arrayBuffer, { type: "array" });
-  const sheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[sheetName];
-  data = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-  filteredData = [...data];
-  buildTableHeader();
-  renderTable(filteredData);
-  updateCharts(filteredData);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Error al descargar el archivo: ${res.statusText}`);
+    const arrayBuffer = await res.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    data = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+    filteredData = [...data];
+    buildTableHeader();
+    renderTable(data);        // Mostrar toda la tabla al inicio
+    updateCharts(data);       // Graficar toda la data
+  } catch (error) {
+    alert("Error cargando datos: " + error.message);
+  }
 }
 
-// Construye encabezados y fila de filtros
+// Construye encabezados y filtros de columna
 function buildTableHeader() {
   headerRow.innerHTML = "";
   filterRow.innerHTML = "";
@@ -43,26 +48,29 @@ function buildTableHeader() {
 
   const keys = Object.keys(data[0]);
   keys.forEach((key) => {
-    // Header
+    // Encabezado
     const th = document.createElement("th");
     th.textContent = key;
     headerRow.appendChild(th);
 
-    // Filtro
+    // Input filtro
     const filterTh = document.createElement("th");
     const input = document.createElement("input");
     input.type = "text";
     input.dataset.key = key;
     input.placeholder = "Filtrar...";
+    input.setAttribute("aria-label", `Filtro para la columna ${key}`);
+
     input.addEventListener("input", () => {
       applyFilters();
     });
+
     filterTh.appendChild(input);
     filterRow.appendChild(filterTh);
   });
 }
 
-// Renderiza la tabla con el dataset que recibe
+// Renderiza tabla con los datos que recibe
 function renderTable(dataSet) {
   tbody.innerHTML = "";
   if (dataSet.length === 0) {
@@ -86,40 +94,41 @@ function renderTable(dataSet) {
   });
 }
 
-// Aplica los filtros de cada input
+// Aplica filtros desde inputs, filtra sobre todos los datos originales (data)
 function applyFilters() {
   const inputs = document.querySelectorAll("#filter-row input");
   filteredData = data.filter((row) =>
     Array.from(inputs).every((input) => {
       const key = input.dataset.key;
       const value = input.value.trim().toLowerCase();
-      return row[key]?.toString().toLowerCase().includes(value);
+      return value === "" || row[key]?.toString().toLowerCase().includes(value);
     })
   );
   renderTable(filteredData);
   updateCharts(filteredData);
 }
 
-// Resetea los filtros y muestra toda la tabla
+// Resetea filtros y muestra toda la data
 function resetFilters() {
   document.querySelectorAll("#filter-row input").forEach((input) => (input.value = ""));
   filteredData = [...data];
-  renderTable(filteredData);
-  updateCharts(filteredData);
+  renderTable(data);
+  updateCharts(data);
 }
 
-// Función para obtener el Top N por clave numérica descendente
+// Devuelve el Top N por una clave numérica descendente
 function getTopN(dataSet, key, n) {
   return [...dataSet]
+    .filter(item => !isNaN(parseFloat(item[key])))
     .sort((a, b) => parseFloat(b[key]) - parseFloat(a[key]))
     .slice(0, n);
 }
 
-// Actualiza las dos gráficas
+// Actualiza gráficos según data dada
 function updateCharts(dataSet) {
   const topN = parseInt(topNInput.value) || 5;
 
-  // Top por costo (torta)
+  // Top por costo (pastel)
   const topCosto = getTopN(dataSet, "Parcial (Bs)", topN);
   const labelsCosto = topCosto.map((item) => item["Descripción insumos"]);
   const valoresCosto = topCosto.map((item) => parseFloat(item["Parcial (Bs)"]));
@@ -207,5 +216,5 @@ resetBtn.addEventListener("click", () => {
   resetFilters();
 });
 
-// Inicializar todo
+// Carga inicial
 loadExcel();
