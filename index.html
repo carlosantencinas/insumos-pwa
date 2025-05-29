@@ -1,3 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lista de Insumos</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Opcional: algo de estilo para tabla y inputs */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    input[type="text"] {
+      width: 90%;
+      padding: 4px;
+    }
+    .filter-row input {
+      box-sizing: border-box;
+    }
+  </style>
+</head>
 <body>
   <h1>Lista de Insumos</h1>
 
@@ -19,19 +48,6 @@
     <button id="reset" aria-label="Resetear filtros">Resetear Filtros</button>
   </div>
 
-  <!-- GRÁFICAS ANTES DE LA TABLA -->
-  <div style="display: flex; gap: 20px; margin-bottom: 2rem;">
-    <div style="flex: 1;">
-      <h3>Top N por Cantidad</h3>
-      <canvas id="chartCantidad" height="200"></canvas>
-    </div>
-    <div style="flex: 1;">
-      <h3>Top N por Costo</h3>
-      <canvas id="chartCosto" height="200"></canvas>
-    </div>
-  </div>
-
-  <!-- TABLA ABAJO -->
   <div id="tabla-container">
     <table id="tablaInsumos">
       <thead>
@@ -42,5 +58,17 @@
     </table>
   </div>
 
+  <div style="display: flex; gap: 20px; margin-top: 2rem;">
+    <div style="flex: 1;">
+      <h3>Top N por Cantidad</h3>
+      <canvas id="chartCantidad" height="200"></canvas>
+    </div>
+    <div style="flex: 1;">
+      <h3>Top N por Costo</h3>
+      <canvas id="chartCosto" height="200"></canvas>
+    </div>
+  </div>
+
   <script type="module" src="app.js"></script>
 </body>
+</html>
