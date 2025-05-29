@@ -12,7 +12,7 @@
 
   <script>
     async function cargarExcelDesdeGitHub() {
-      const urlExcel = 'const urlExcel = "https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/main/insumos.xlsx';
+      const urlExcel = "https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/main/insumos.xlsx";
       try {
         const response = await fetch(urlExcel);
         if (!response.ok) throw new Error('No se pudo cargar el archivo Excel');
