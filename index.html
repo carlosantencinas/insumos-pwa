@@ -1,51 +1,12 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lista de Insumos</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    /* Opcional: algo de estilo para tabla y inputs */
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 6px 8px;
-    }
-    th {
-      background-color: #f4f4f4;
-    }
-    input[type="text"] {
-      width: 90%;
-      padding: 4px;
-    }
-    .filter-row input {
-      box-sizing: border-box;
-    }
-  </style>
-</head>
 <body>
   <h1>Lista de Insumos</h1>
 
   <div style="margin-bottom: 1rem;">
     <label for="topN">Mostrar Top N:</label>
-    <input
-      type="number"
-      id="topN"
-      value="5"
-      min="1"
-      aria-label="Número para mostrar el Top N"
-    />
-    <button id="topCantidad" aria-label="Mostrar top por cantidad">
-      Top por Cantidad
-    </button>
-    <button id="topCosto" aria-label="Mostrar top por costo">
-      Top por Costo
-    </button>
-    <button id="reset" aria-label="Resetear filtros">Resetear Filtros</button>
+    <input type="number" id="topN" value="5" min="1" />
+    <button id="topCantidad">Top por Cantidad</button>
+    <button id="topCosto">Top por Costo</button>
+    <button id="reset">Resetear Filtros</button>
   </div>
 
   <div id="tabla-container">
@@ -69,6 +30,5 @@
     </div>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <script src="app.js"></script>
 </body>
-</html>
