@@ -1,149 +1,91 @@
-const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/4baa7c0dccc19e622a3d1bf9745cc334b1f0ca54/insumos.xlsx';
-
-const tableContainer = document.getElementById('table-container');
-
 let data = [];
 let filteredData = [];
+let chart;
 
-async function loadExcelFromURL(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Error al descargar archivo Excel');
+const inputFilter = document.getElementById('inputFilter');
+const resetButton = document.getElementById('resetFilter');
+const tableBody = document.querySelector('#dataTable tbody');
+const chartCanvas = document.getElementById('chart');
+const topCantidadInput = document.getElementById('topCantidad');
+const topCostoInput = document.getElementById('topCosto');
 
-    const arrayBuffer = await response.arrayBuffer();
-    const dataArray = new Uint8Array(arrayBuffer);
-    const workbook = XLSX.read(dataArray, { type: 'array' });
-
-    const firstSheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[firstSheetName];
-    const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-    data = json;
+fetch('https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/4baa7c0dccc19e622a3d1bf9745cc334b1f0ca54/insumos.xlsx')
+  .then(res => res.arrayBuffer())
+  .then(buffer => {
+    const workbook = XLSX.read(buffer, { type: 'array' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    data = XLSX.utils.sheet_to_json(sheet);
     filteredData = [...data];
     renderTable(filteredData);
-    renderCharts(filteredData);
-
-  } catch (error) {
-    tableContainer.innerHTML = `<p>Error cargando archivo: ${error.message}</p>`;
-    console.error(error);
-  }
-}
-
-// Renderizado y funciones para filtros y gráficos, igual que antes
-
-function renderTable(dataArray) {
-  if(dataArray.length === 0){
-    tableContainer.innerHTML = '<p>No hay datos para mostrar.</p>';
-    return;
-  }
-
-  const columns = Object.keys(dataArray[0]);
-
-  let html = '<table><thead><tr>';
-  columns.forEach(col => {
-    html += `<th>${col}<br><input type="text" data-col="${col}" placeholder="Filtrar" /></th>`;
+    updateChart();
   });
-  html += '</tr></thead><tbody>';
 
-  dataArray.forEach(row => {
-    html += '<tr>';
-    columns.forEach(col => {
-      html += `<td>${row[col]}</td>`;
+function renderTable(dataToRender) {
+  tableBody.innerHTML = '';
+  dataToRender.forEach(row => {
+    const tr = document.createElement('tr');
+    ['Nº', 'Descripción insumos', 'Und.', 'Cant.', 'Unit.', 'Parcial (Bs)'].forEach(key => {
+      const td = document.createElement('td');
+      td.textContent = row[key];
+      tr.appendChild(td);
     });
-    html += '</tr>';
-  });
-  html += '</tbody></table>';
-
-  tableContainer.innerHTML = html;
-
-  // Añadir eventos para filtrar
-  const inputs = tableContainer.querySelectorAll('thead input');
-  inputs.forEach(input => {
-    input.addEventListener('input', onFilterChange);
+    tableBody.appendChild(tr);
   });
 }
 
-function onFilterChange() {
-  const inputs = tableContainer.querySelectorAll('thead input');
-  filteredData = data.filter(row => {
-    return Array.from(inputs).every(input => {
-      const col = input.dataset.col;
-      const val = input.value.trim().toLowerCase();
-      if (!val) return true;
-      return row[col].toString().toLowerCase().includes(val);
-    });
-  });
-  renderTable(filteredData);
-  renderCharts(filteredData);
-}
+function updateChart() {
+  const topN = parseInt(topCostoInput.value || 5);
+  const sorted = [...filteredData]
+    .sort((a, b) => (parseFloat(b['Parcial (Bs)']) || 0) - (parseFloat(a['Parcial (Bs)']) || 0))
+    .slice(0, topN);
 
-function renderCharts(dataArray) {
-  if (!dataArray.length) return;
+  const total = filteredData.reduce((sum, row) => sum + (parseFloat(row['Parcial (Bs)']) || 0), 0);
+  const labels = sorted.map(row => row['Descripción insumos']);
+  const values = sorted.map(row => parseFloat(row['Parcial (Bs)']));
 
-  const parsedData = dataArray.map(item => ({
-    desc: item['Descripción insumos'],
-    cant: parseFloat(item['Cant.']) || 0,
-    costo: parseFloat(item['Parcial (Bs)']) || 0
-  }));
-
-  const totalCosto = parsedData.reduce((acc, cur) => acc + cur.costo, 0);
-
-  const topCantidad = [...parsedData]
-    .sort((a,b) => b.cant - a.cant)
-    .slice(0,5);
-
-  const topCosto = [...parsedData]
-    .sort((a,b) => b.costo - a.costo)
-    .slice(0,5);
-
-  function prepareChartData(items) {
-    const labels = items.map(i => i.desc);
-    const values = items.map(i => i.costo);
-    const otros = totalCosto - values.reduce((a,b) => a+b, 0);
-    if (otros > 0) {
-      labels.push('Otros');
-      values.push(otros);
-    }
-    return {labels, values};
-  }
-
-  const chartDataCant = prepareChartData(topCantidad);
-  const chartDataCosto = prepareChartData(topCosto);
-
-  renderPieChart('chartCantidad', chartDataCant.labels, chartDataCant.values);
-  renderPieChart('chartCosto', chartDataCosto.labels, chartDataCosto.values);
-}
-
-let chartInstances = {};
-function renderPieChart(canvasId, labels, data) {
-  if(chartInstances[canvasId]){
-    chartInstances[canvasId].destroy();
-  }
-  const ctx = document.getElementById(canvasId).getContext('2d');
-  chartInstances[canvasId] = new Chart(ctx, {
+  if (chart) chart.destroy();
+  chart = new Chart(chartCanvas, {
     type: 'pie',
     data: {
       labels,
       datasets: [{
-        label: 'Costo (Bs)',
-        data,
-        backgroundColor: [
-          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#C9CBCF'
-        ]
+        data: values,
+        backgroundColor: labels.map(() => `hsl(${Math.random() * 360}, 70%, 70%)`)
       }]
     },
-    options: { responsive: true }
+    options: {
+      plugins: {
+        title: {
+          display: true,
+          text: `Top ${topN} por Costo (Bs) sobre un total de ${total.toFixed(2)} Bs`
+        }
+      }
+    }
   });
 }
 
-// Cargar archivo al inicio
-loadExcelFromURL(GITHUB_RAW_URL);
+// EVENTOS
 
-// Registro service worker igual que antes
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').then(() => {
-      console.log('Service Worker registrado');
-    }).catch(err => console.log('Error registrando SW:', err));
-  });
-}
+inputFilter.addEventListener('input', () => {
+  const text = inputFilter.value.toLowerCase();
+  filteredData = data.filter(row =>
+    (row['Descripción insumos'] || '').toString().toLowerCase().includes(text)
+  );
+  renderTable(filteredData);
+  updateChart();
+});
+
+resetButton.addEventListener('click', () => {
+  inputFilter.value = '';
+  filteredData = [...data];
+  renderTable(filteredData);
+  updateChart();
+});
+
+topCantidadInput.addEventListener('input', () => {
+  renderTable(filteredData); // En el futuro puedes agregar gráfico de cantidad si deseas
+});
+
+topCostoInput.addEventListener('input', () => {
+  updateChart();
+});
