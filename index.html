@@ -1,29 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Insumos PWA</title>
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="manifest.json">
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 2rem;
-    }
-    .controls {
-      margin-bottom: 1rem;
-    }
-    input[type="text"],
-    input[type="number"] {
-      padding: 0.5rem;
-      margin: 0.25rem;
-    }
-    button {
-      padding: 0.5rem 1rem;
-      margin: 0.25rem;
-    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -31,60 +15,39 @@
     }
     th, td {
       border: 1px solid #ccc;
-      padding: 0.5rem;
+      padding: 4px;
       text-align: left;
     }
-    th {
-      background: #f0f0f0;
+    input[type="number"] {
+      width: 60px;
     }
-    canvas {
-      max-width: 500px;
-      margin-top: 2rem;
+    .filter-row input {
+      width: 100%;
+      box-sizing: border-box;
     }
   </style>
 </head>
 <body>
-  <h1>Lista de AAAAAAAAAAAAAAAAAAAA Insumos</h1>
+  <h1>Lista de Insumos</h1>
 
-  <div class="controls">
-    <label>Filtrar por nombre:
-      <input type="text" id="inputFilter" placeholder="Filtrar por descripción...">
-    </label>
-    <button id="resetFilter">Resetear Filtros</button>
-    <br><br>
-    <label>Top N por Cantidad:
-      <input type="number" id="topCantidad"  min="1" />
-    </label>
-    <label>Top N por Costo:
-      <input type="number" id="topCosto"  min="1" />
-    </label>
+  <label for="topN">Mostrar Top:</label>
+  <input type="number" id="topN" value="5" min="1" />
+
+  <button id="topCantidad">Top por Cantidad</button>
+  <button id="topCosto">Top por Costo</button>
+  <button id="reset">Resetear Filtros</button>
+
+  <div id="tabla-container">
+    <table id="tablaInsumos">
+      <thead>
+        <tr id="header-row"></tr>
+        <tr id="filter-row" class="filter-row"></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
-  <table id="dataTable">
-    <thead>
-      <tr>
-        <th>Nº</th>
-        <th>Descripción insumos</th>
-        <th>Und.</th>
-        <th>Cant.</th>
-        <th>Unit.</th>
-        <th>Parcial (Bs)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Se cargan dinámicamente -->
-    </tbody>
-  </table>
-<label for="topCantidad">Top por Cantidad:</label>
-<input type="number" id="topCantidad" value="5" min="1" style="width: 60px;">
-
-<label for="topCosto">Top por Costo:</label>
-<input type="number" id="topCosto" value="5" min="1" style="width: 60px;">
-
-<canvas id="chartCantidad" width="400" height="300"></canvas>
-<canvas id="chartCosto" width="400" height="300"></canvas>
-
-  <canvas id="chart"></canvas>
+  <canvas id="chartCosto" width="400" height="200"></canvas>
 
   <script src="app.js"></script>
 </body>
