@@ -11,26 +11,26 @@
   <pre id="output" style="white-space: pre-wrap; background: #eee; padding: 10px;"></pre>
 
   <script>
-    async function cargarExcelDesdeGitHub() {
-      const urlExcel = "https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/main/insumos.xlsx";
-      try {
-        const response = await fetch(urlExcel);
-        if (!response.ok) throw new Error('No se pudo cargar el archivo Excel');
+async function cargarExcelDesdeGitHub() {
+  const urlExcel = "https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/main/insumos.xlsx";
+  try {
+    const response = await fetch(urlExcel);
+    if (!response.ok) throw new Error('No se pudo cargar el archivo Excel');
 
-        const arrayBuffer = await response.arrayBuffer();
-        const data = new Uint8Array(arrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
+    const arrayBuffer = await response.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
 
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
-        return jsonData;
-      } catch (error) {
-        console.error('Error al cargar o procesar Excel:', error);
-        return null;
-      }
-    }
+    return jsonData;
+  } catch (error) {
+    console.error('Error al cargar o procesar Excel:', error);
+    return null;
+  }
+}
+
 
     window.onload = async () => {
       const datos = await cargarExcelDesdeGitHub();
