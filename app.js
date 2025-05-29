@@ -18,10 +18,12 @@ fetch('https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/4baa7c0dcc
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     data = XLSX.utils.sheet_to_json(sheet);
     filteredData = [...data]; // Mostrar todo al inicio
+
     renderTable(filteredData);
     updateChartCosto();
     updateChartCantidad();
   });
+
 
 function renderTable(dataToRender) {
   tableBody.innerHTML = '';
@@ -120,10 +122,16 @@ function updateChartCantidad() {
 // EVENTOS
 
 inputFilter.addEventListener('input', () => {
-  const text = inputFilter.value.toLowerCase();
-  filteredData = data.filter(row =>
-    (row['Descripción insumos'] || '').toString().toLowerCase().includes(text)
-  );
+  const text = inputFilter.value.trim().toLowerCase();
+
+  if (text === '') {
+    filteredData = [...data]; // volver a todos
+  } else {
+    filteredData = data.filter(row =>
+      (row['Descripción insumos'] || '').toString().toLowerCase().includes(text)
+    );
+  }
+
   renderTable(filteredData);
   updateChartCosto();
   updateChartCantidad();
