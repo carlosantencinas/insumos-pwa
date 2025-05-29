@@ -1,71 +1,56 @@
 let insumos = [];
 
-window.addEventListener('load', () => {
-  Papa.parse('insumos.csv', {
+function cargarCSV() {
+  Papa.parse("insumos.csv", {
     download: true,
     header: true,
-    dynamicTyping: true,
+    skipEmptyLines: true,
     complete: function(results) {
-      insumos = results.data.filter(row => row.Nombre); // ignora filas vacías
-      filtrar();
-    }
-  });
-});
-
-document.getElementById('filtroNombre').addEventListener('input', filtrar);
-document.getElementById('filtroUnidad').addEventListener('input', filtrar);
-document.getElementById('filtroCantidad').addEventListener('input', filtrar);
-
-function cargarCSV(event) {
-  const file = event.target.files[0];
-  Papa.parse(file, {
-    header: true,
-    dynamicTyping: true,
-    complete: function(results) {
-      insumos = results.data;
+      insumos = results.data.map(row => ({
+        Nombre: row["Descripción insumos"],
+        Unidad: row["Und."],
+        Cantidad: parseFloat(row["Cant."]),
+        PrecioUnitario: parseFloat(row["Unit."]),
+        CostoParcial: parseFloat(row["Parcial (Bs)"])
+      }));
       filtrar();
     }
   });
 }
 
 function filtrar() {
-  const nombre = document.getElementById('filtroNombre').value.toLowerCase();
-  const unidad = document.getElementById('filtroUnidad').value.toLowerCase();
-  const cantidadMin = parseFloat(document.getElementById('filtroCantidad').value) || 0;
+  const nombre = document.getElementById("filtroNombre").value.toLowerCase();
+  const unidad = document.getElementById("filtroUnidad").value.toLowerCase();
+  const cantidad = parseFloat(document.getElementById("filtroCantidad").value) || 0;
 
-  const filtrados = insumos.filter(i =>
-    (!nombre || i.Nombre?.toLowerCase().includes(nombre)) &&
-    (!unidad || i.Unidad?.toLowerCase().includes(unidad)) &&
-    (!isNaN(i.Cantidad) && i.Cantidad >= cantidadMin)
+  const resultados = insumos.filter(i =>
+    i.Nombre.toLowerCase().includes(nombre) &&
+    i.Unidad.toLowerCase().includes(unidad) &&
+    (!cantidad || i.Cantidad >= cantidad)
   );
 
-  mostrarTabla(filtrados);
-}
-
-function mostrarTabla(data) {
-  const tbody = document.querySelector('#tablaInsumos tbody');
-  tbody.innerHTML = '';
-  data.forEach(i => {
-    const fila = document.createElement('tr');
-    fila.innerHTML = `
+  const tbody = document.getElementById("tablaInsumos");
+  tbody.innerHTML = resultados.map(i => `
+    <tr>
       <td>${i.Nombre}</td>
       <td>${i.Unidad}</td>
       <td>${i.Cantidad}</td>
-      <td>${i['Precio Unitario']}</td>
-      <td>${i['Costo Parcial']}</td>
-    `;
-    tbody.appendChild(fila);
-  });
+      <td>${i.PrecioUnitario}</td>
+      <td>${i.CostoParcial}</td>
+    </tr>`).join("");
+
+  mostrarTop(resultados);
 }
 
-function mostrarTopCantidad() {
-  const topN = parseInt(document.getElementById('topN').value) || 5;
-  const top = [...insumos].sort((a, b) => b.Cantidad - a.Cantidad).slice(0, topN);
-  mostrarTabla(top);
+function mostrarTop(data) {
+  const topCantidad = [...data].sort((a, b) => b.Cantidad - a.Cantidad).slice(0, 5);
+  const topCosto = [...data].sort((a, b) => b.CostoParcial - a.CostoParcial).slice(0, 5);
+
+  document.getElementById("topCantidad").innerHTML = topCantidad.map(i =>
+    `<li>${i.Nombre} (${i.Cantidad})</li>`).join("");
+
+  document.getElementById("topCosto").innerHTML = topCosto.map(i =>
+    `<li>${i.Nombre} (${i.CostoParcial} Bs)</li>`).join("");
 }
 
-function mostrarTopCosto() {
-  const topN = parseInt(document.getElementById('topN').value) || 5;
-  const top = [...insumos].sort((a, b) => b['Costo Parcial'] - a['Costo Parcial']).slice(0, topN);
-  mostrarTabla(top);
-}
+window.addEventListener("load", cargarCSV);
