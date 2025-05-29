@@ -1,11 +1,13 @@
 let data = [];
 let filteredData = [];
-let chart;
+let chartCosto;
+let chartCantidad;
 
 const inputFilter = document.getElementById('inputFilter');
 const resetButton = document.getElementById('resetFilter');
 const tableBody = document.querySelector('#dataTable tbody');
-const chartCanvas = document.getElementById('chart');
+const chartCostoCanvas = document.getElementById('chartCosto');
+const chartCantidadCanvas = document.getElementById('chartCantidad');
 const topCantidadInput = document.getElementById('topCantidad');
 const topCostoInput = document.getElementById('topCosto');
 
@@ -17,7 +19,8 @@ fetch('https://raw.githubusercontent.com/carlosantencinas/insumos-pwa/4baa7c0dcc
     data = XLSX.utils.sheet_to_json(sheet);
     filteredData = [...data]; // Mostrar todo al inicio
     renderTable(filteredData);
-    updateChart();
+    updateChartCosto();
+    updateChartCantidad();
   });
 
 function renderTable(dataToRender) {
@@ -45,7 +48,7 @@ function renderTable(dataToRender) {
   });
 }
 
-function updateChart() {
+function updateChartCosto() {
   const topN = parseInt(topCostoInput.value || 5);
   const sorted = [...filteredData]
     .sort((a, b) => (parseFloat(b['Parcial (Bs)']) || 0) - (parseFloat(a['Parcial (Bs)']) || 0))
@@ -55,8 +58,8 @@ function updateChart() {
   const labels = sorted.map(row => row['Descripción insumos']);
   const values = sorted.map(row => parseFloat(row['Parcial (Bs)']));
 
-  if (chart) chart.destroy();
-  chart = new Chart(chartCanvas, {
+  if (chartCosto) chartCosto.destroy();
+  chartCosto = new Chart(chartCostoCanvas, {
     type: 'pie',
     data: {
       labels,
@@ -76,6 +79,44 @@ function updateChart() {
   });
 }
 
+function updateChartCantidad() {
+  const topN = parseInt(topCantidadInput.value || 5);
+  const sorted = [...filteredData]
+    .sort((a, b) => (parseFloat(b['Cant.']) || 0) - (parseFloat(a['Cant.']) || 0))
+    .slice(0, topN);
+
+  const labels = sorted.map(row => row['Descripción insumos']);
+  const values = sorted.map(row => parseFloat(row['Cant.']));
+
+  if (chartCantidad) chartCantidad.destroy();
+  chartCantidad = new Chart(chartCantidadCanvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Cantidad',
+        data: values,
+        backgroundColor: 'rgba(54, 162, 235, 0.6)'
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: {
+        title: {
+          display: true,
+          text: `Top ${topN} por Cantidad`
+        },
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
 // EVENTOS
 
 inputFilter.addEventListener('input', () => {
@@ -84,20 +125,22 @@ inputFilter.addEventListener('input', () => {
     (row['Descripción insumos'] || '').toString().toLowerCase().includes(text)
   );
   renderTable(filteredData);
-  updateChart();
+  updateChartCosto();
+  updateChartCantidad();
 });
 
 resetButton.addEventListener('click', () => {
   inputFilter.value = '';
   filteredData = [...data];
   renderTable(filteredData);
-  updateChart();
+  updateChartCosto();
+  updateChartCantidad();
 });
 
 topCantidadInput.addEventListener('input', () => {
-  renderTable(filteredData);
+  updateChartCantidad();
 });
 
 topCostoInput.addEventListener('input', () => {
-  updateChart();
+  updateChartCosto();
 });
