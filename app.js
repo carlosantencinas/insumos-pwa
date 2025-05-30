@@ -119,88 +119,55 @@ function getTopN(dataSet, key, n) {
 function updateCharts(dataSet) {
   const topN = parseInt(topNInput.value) || 5;
 
-  // Total global sin filtros
-  const totalGlobal = data.reduce((acc, item) => acc + parseFloat(item["Parcial (Bs)"] || 0), 0);
-  document.getElementById("totalGlobal").textContent = `Costo total de todos los insumos: ${totalGlobal.toFixed(2)} Bs.`;
-
-  // Top por costo
+  // Gráfico de Costo
   const topCosto = getTopN(dataSet, "Parcial (Bs)", topN);
   const labelsCosto = topCosto.map((item) => item["Descripción insumos"]);
   const valoresCosto = topCosto.map((item) => parseFloat(item["Parcial (Bs)"]));
+  const totalCosto = valoresCosto.reduce((sum, val) => sum + val, 0);
+  const totalFormateado = totalCosto.toLocaleString("es-BO", { style: "currency", currency: "BOB" });
 
   if (chartInstance) chartInstance.destroy();
   chartInstance = new Chart(chartCanvas, {
     type: "pie",
     data: {
       labels: labelsCosto,
-      datasets: [{
-        label: "Costo",
-        data: valoresCosto,
-        backgroundColor: [
-          "#ff6384", "#36a2eb", "#ffcd56",
-          "#4bc0c0", "#9966ff", "#c9cbcf"
-        ],
-      }],
+      datasets: [
+        {
+          label: "Costo",
+          data: valoresCosto,
+          backgroundColor: [
+            "#ff6384",
+            "#36a2eb",
+            "#ffcd56",
+            "#4bc0c0",
+            "#9966ff",
+            "#c9cbcf",
+          ],
+        },
+      ],
     },
     options: {
       plugins: {
         title: {
           display: true,
-          text: `Top ${topN} por Costo (Bs) — Total: ${totalGlobal.toFixed(2)} Bs.`,
+          text: `Top ${topN} por Costo (Bs): ${totalFormateado}`,
           color: "#000",
           font: {
             size: 20,
             weight: "bold",
           },
         },
-        datalabels: {
-          formatter: (value, context) => {
-            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-            const percent = (value / total) * 100;
-            return `${percent.toFixed(1)}%`;
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              const value = context.raw || 0;
+              return `${context.label}: ${value.toLocaleString("es-BO", { style: "currency", currency: "BOB" })}`;
+            },
           },
-          color: "#000",
-          font: {
-            weight: 'bold',
-            size: 14
-          }
-        }
-      },
-    },
-    plugins: [ChartDataLabels]
-  });
-
-  // Top por cantidad
-  const topCant = getTopN(dataSet, "Cant.", topN);
-  const labelsCant = topCant.map((item) => item["Descripción insumos"]);
-  const valoresCant = topCant.map((item) => parseFloat(item["Cant."]));
-
-  if (chartCantidadInstance) chartCantidadInstance.destroy();
-  chartCantidadInstance = new Chart(chartCantidadCanvas, {
-    type: "bar",
-    data: {
-      labels: labelsCant,
-      datasets: [{
-        label: "Cantidad",
-        data: valoresCant,
-        backgroundColor: "#4bc0c0",
-      }],
-    },
-    options: {
-      plugins: {
-        title: {
-          display: true,
-          text: `Top ${topN} por Cantidad`,
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
         },
       },
     },
   });
-}
 
   // Gráfico de Cantidad
   const topCant = getTopN(dataSet, "Cant.", topN);
